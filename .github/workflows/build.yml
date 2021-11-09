@@ -1,0 +1,43 @@
+name: Build and deploy docker images
+'on':
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    name: Build LasoXP Guest Web App
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        baseImageTag: [ '11.0.13_1.5.5_2.13.7', '17.0.1_1.5.5_2.13.7' ]
+        include:
+          - platforms: 'linux/amd64,linux/arm64'
+            baseImageTag: '11.0.13_1.5.5_2.13.7'
+          - platforms: 'linux/amd64,linux/arm64'
+            baseImageTag: '17.0.1_1.5.5_2.13.7'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Available platforms
+        run: echo ${{ steps.buildx.outputs.platforms }}
+      - name: Create docker tag
+        id: create_docker_tag
+        run: |
+          TAG=spfr/scala-sbt-awscli:${{ matrix.baseImageTag }}
+          echo ::set-output name=TAG::$TAG
+      - name: Log in to DockerHub
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u zilet --password-stdin
+      - name: Build docker image for platforms ${{ matrix.platforms }}
+        run: |
+          docker buildx build . \
+              --no-cache \
+              -t "${{ steps.create_docker_tag.outputs.TAG }}" \
+              --build-arg BASE_IMAGE_TAG=${{ matrix.baseImageTag }} \
+              --platform ${{ matrix.platforms }} \
+              --push
