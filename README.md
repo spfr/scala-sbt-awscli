@@ -4,7 +4,7 @@ Image based on [hseeberger/scala-sbt](https://github.com/hseeberger/scala-sbt)
 
 ## Versions available 
 
-All available tags https://hub.docker.com/repository/docker/spfr/scala-sbt-aws
+All available tags https://hub.docker.com/repository/docker/spfr/scala-sbt-awscli
 
 Tags are in the format of <<JDK_VERSION>>_<<SBT_VERION>>_<<SCALA_VERSION>>
 
